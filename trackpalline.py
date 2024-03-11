@@ -14,8 +14,13 @@ upper_color = np.array([15, 255, 255])  # Esempio per arancione scuro
 while cap.isOpened():
     ret, frame = cap.read()
     if ret:
+
+
+        # Applica Gaussian Blur per ridurre il rumore e le variazioni di luce
+        blurred_frame = cv2.GaussianBlur(frame, (11, 11), 0)
+
         # Converti il frame da BGR a HSV
-        hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        hsv_frame = cv2.cvtColor(blurred_frame, cv2.COLOR_BGR2HSV)
 
         # Crea una maschera che isoli la palla basandosi sul colore
         mask = cv2.inRange(hsv_frame, lower_color, upper_color)
