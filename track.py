@@ -5,6 +5,7 @@ import time
 # Collegati allo stream della telecamera
 cap = cv2.VideoCapture(1)
 
+
 # Definisci i range di colore per il tracking della palla
 # Modifica questi valori in base al colore della tua palla
 lower_color = np.array([5, 100, 100])  # Esempio per arancione chiaro
