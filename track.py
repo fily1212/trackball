@@ -3,7 +3,7 @@ import numpy as np
 import time
 
 # Collegati allo stream della telecamera
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 
 # Definisci i range di colore per il tracking della palla

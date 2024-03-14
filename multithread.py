@@ -10,17 +10,17 @@ lower_color = np.array([5, 100, 100])  # Esempio per arancione chiaro
 upper_color = np.array([15, 255, 255])  # Esempio per arancione scuro
 
 # Variabile globale per conservare la posizione della palla
-global_position = "centro"
+position = "forward"
 
 # Setup della connessione seriale con Arduino
 # Cambia 'COM6' con il tuo dispositivo seriale corretto
 arduino = serial.Serial('COM6', 9600, timeout=1)
-time.sleep(2)  # Dà tempo ad Arduino di resettarsi
+time.sleep(3)  # Dà tempo ad Arduino di resettarsi
 
 
 def track_ball():
     global position
-    cap = cv2.VideoCapture(1)  # Collegati allo stream della telecamera
+    cap = cv2.VideoCapture(0)  # Collegati allo stream della telecamera
 
     while cap.isOpened():
         time.sleep(0.1)  # Modifica per regolare la frequenza di campionamento
@@ -37,8 +37,8 @@ def track_ball():
 
                 if radius > 12:
                     center_of_frame = frame.shape[1] / 2
-                    position = "centro" if abs(x - center_of_frame) < 40 else (
-                        "sinistra" if x < center_of_frame else "destra")
+                    position = "forward" if abs(x - center_of_frame) < 40 else (
+                        "left" if x < center_of_frame else "right")
                     print(f"La palla è a {position}.")
 
                     # Opzionale: visualizza il risultato
@@ -48,6 +48,7 @@ def track_ball():
                         break
             else:
                 print('Palla non trovata.')
+                position = "no"
         else:
             print('Errore nella cattura del frame.')
             break
@@ -57,7 +58,7 @@ def track_ball():
 
 
 def communicate_with_arduino():
-    global global_position
+    global position
     while True:
         if arduino.in_waiting > 0:
             line = arduino.readline().decode('utf-8').rstrip()
@@ -67,11 +68,14 @@ def communicate_with_arduino():
                 jsonObj = json.loads(line)
                 print("Ricevuto da Arduino:", jsonObj)
 
-                # Costruzione del JSON di risposta basato sulla posizione attuale della palla
-                response = {"comando": global_position}  # Aggiusta i campi come necessario
-                response_json = json.dumps(response) + '\n'  # Aggiungi '\n' come delimitatore
-                arduino.write(response_json.encode('utf-8'))
+                arduino.reset_input_buffer()
 
+                # Costruzione del JSON di risposta basato sulla posizione attuale della palla
+                response = {"cmd": position}  # Aggiusta i campi come necessario
+                response_json = json.dumps(response) + '\n'  # Aggiungi '\n' come delimitatore
+                print("Invio reponse:", response_json)
+                arduino.write(response_json.encode('utf-8'))
+                print("Inviato")
                 # Reset del buffer di input per evitare accumulo di vecchi messaggi
                 arduino.reset_input_buffer()
 
@@ -81,7 +85,7 @@ def communicate_with_arduino():
                 print(f"An error occurred: {e}")
 
         # Puoi aggiungere una piccola pausa per ridurre il carico di lavoro
-        time.sleep(0.5)  # Ajust this based on your needs
+        time.sleep(0.3)  # Ajust this based on your needs
 
 
 # Creazione dei thread
